@@ -1,16 +1,34 @@
-# React + Vite
+# CIT 382 Capstone – React Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This project is a React-based frontend for a property management database application originally developed in CIT 381. The goal of this capstone is to rebuild and improve the frontend using React and Vite, with a focus on clearer state management, component structure, and incremental development.
 
-Currently, two official plugins are available:
+At this stage, the project is intentionally early and not feature-complete. The emphasis is on setting up a solid foundation and rebuilding core functionality one piece at a time rather than attempting a full rewrite immediately.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Current Progress
 
-## React Compiler
+- React + Vite project initialized
+- Basic project structure in place
+- Residents page implemented with:
+  - Data fetching from an existing Express API
+  - Search functionality
+  - Sorting
+  - State-driven UI updates
+  - Delete action with optimistic updates
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Intended Functionality
 
-## Expanding the ESLint configuration
+The application is intended for internal property management use, including:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Viewing and searching residents
+- Managing related data (units, leases, payments, etc.)
+- Providing a clean, maintainable React-based interface backed by an existing database
+
+Additional features will be added incrementally over the course of the term.
+
+## Backend
+
+This frontend connects to an existing backend built in CIT 381 using Node.js, Express, and MySQL. The backend is maintained separately and is not included in this repository.
+
+## Project Status
+
+This project is a work in progress and will continue to evolve throughout the term. The current implementation prioritizes direction and structure over polish.
