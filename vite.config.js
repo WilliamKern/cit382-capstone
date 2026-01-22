@@ -10,6 +10,24 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
       },
+      "/units": {
+        target: "http://localhost:3000",
+        changeOrigin: true,
+        secure: false,
+      },
+      "/payments": {
+        target: "http://localhost:3000",
+        changeOrigin: true,
+        secure: false,
+      },
+      "/available-units": {
+        target: "http://localhost:3000",
+        changeOrigin: true,
+        secure: false,
+      },
+      // Add more API routes here as you build them:
+      // "/leases": { target: "http://localhost:3000", changeOrigin: true, secure: false },
+      // "/resident-lookup": { target: "http://localhost:3000", changeOrigin: true, secure: false },
     },
   },
 });
