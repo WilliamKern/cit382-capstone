@@ -1,59 +1,142 @@
 # CIT 382 Capstone – React Frontend
 
-This project is a React-based frontend for a property management database application originally developed in CIT 381. The purpose of this capstone is to rebuild and improve the frontend using **React + Vite**, with an emphasis on clear state management, predictable data flow, and scalable component structure.
+This project is a React-based frontend for a property management database application originally developed in CIT 381. The application has been rebuilt using **React + Vite + React Router**, with an emphasis on intentional state ownership, predictable data flow, and scalable component structure.
 
-The project is being developed incrementally over the course of the term. Rather than attempting a full rewrite up front, core functionality is rebuilt step-by-step with a focus on maintainability and alignment with course concepts.
+The goal of this capstone is not simply feature replication, but structural clarity — ensuring that the application can grow without becoming fragile.
+
+---
+
+## Architecture Overview
+
+The application follows a clear separation of responsibility:
+
+### App
+
+- Owns shared state (e.g., payments data)
+- Owns shared effects (initial data loading)
+- Handles route wiring
+- Coordinates data passed to pages
+
+### Pages (Route Targets)
+
+- `DashboardPage`
+- `ResidentsPage`
+- `UnitsPage`
+- `PaymentsPage`
+- Responsible for rendering full views
+- Receive data and callbacks via props
+
+### Reusable Components
+
+- `PaymentForm`
+- `Toast`
+- Responsible for UI presentation and emitting events upward
+- Do not own shared application state
+
+### Services Layer
+
+- API calls are isolated in `services/`
+- Handles communication with backend REST endpoints
+- Keeps data-fetching logic out of UI components
+
+State is lifted only when necessary and lives in the lowest shared parent that requires it.
 
 ---
 
 ## Current Functionality
 
-The application currently includes the following views, managed using state-based view selection (no routing yet):
-
 ### Dashboard
 
-- High-level overview of system data
-- Summary metrics for residents, units, and payments
+- High-level summary view
+- Resident count
+- Unit count
 - Unit status breakdown
-- Recent payment activity
-- Read-only, data-driven UI
+- Recent payments
+- Payment totals (all-time + last 30 days)
+- Refresh capability
+- Data shared with Payments view
 
 ### Residents
 
-- Fetches resident data from an existing Express API
-- Search and sort functionality
-- Delete functionality with optimistic UI updates
-- Fully state-driven UI
+- Fetches resident data from backend API
+- Search across name, email, phone, and ID
+- Sort by name or ID
+- Optimistic delete with rollback on failure
+- Toast notifications for success/error feedback
 
 ### Units
 
-- Read-only list of all units
-- Search functionality
-- Clickable table headers to sort by column (ascending/descending)
-- Standard table behavior consistent with common web applications
+- Read-only unit listing
+- Search across multiple fields
+- Clickable sortable table headers (ascending/descending)
+- Client-side filtering and sorting logic
 
 ### Payments
 
-- Ledger-style view of payments
-- Displays payment date/time in a user-friendly format
-- Supports adding new payments
-- No edit or delete functionality by design
+- Ledger-style payment table
+- Search functionality
+- Create new payment
+- Lease ID typeahead with debounced lookup
+- Shared payment state with Dashboard
+- Refresh functionality
+
+---
+
+## State & Data Flow
+
+- Payments state is owned in `App` and passed to:
+  - `DashboardPage`
+  - `PaymentsPage`
+
+- Creating a payment in `PaymentsPage` triggers:
+  - API call
+  - Shared state refresh in `App`
+  - Automatic UI update in both views
+
+- Residents and Units manage local view-specific state internally.
+
+The application follows one-way data flow:
+
+Child components request changes.  
+Parent components own and update shared state.
+
+---
+
+## Side Effects
+
+The application uses intentional `useEffect` hooks for:
+
+- Initial data loading
+- Debounced lease lookup (typeahead)
+- Toast auto-dismiss timing
+
+Effects are colocated with the state they synchronize and are not placed in purely presentational components.
+
+---
+
+## Theming
+
+The application includes a **light / dark mode toggle** implemented using CSS variables and a `data-theme` attribute on `<html>`.
+
+All UI elements use theme tokens (e.g., `--panel`, `--border`, `--text`) to ensure consistent rendering across themes.
 
 ---
 
 ## Technical Focus
 
-This project emphasizes:
+This capstone emphasizes:
 
-- Controlled React components
-- State-driven UI updates
-- One-way data flow
-- View-based layout using application state
-- Separation of concerns between views and shared utilities
-- Client-side formatting and presentation logic
-- Incremental complexity rather than premature abstraction
+- Controlled components
+- Intentional state ownership
+- Shared state lifting only when required
+- Separation of pages vs reusable components
+- Clear routing structure
+- Predictable side effects
+- Debounced API interactions
+- Optimistic UI updates
+- Maintainable CSS variable theming
 
-Styling and layout are intentionally simple but consistent, prioritizing usability and clarity over heavy visual polish.
+Styling prioritizes clarity and consistency over heavy visual polish.
 
 ---
 
@@ -65,10 +148,17 @@ This frontend connects to an existing backend built in **CIT 381** using:
 - Express
 - MySQL
 
-The backend API is maintained separately and is **not included** in this repository. All data fetching is done via existing REST endpoints exposed by that server.
+The backend API is maintained separately and is not included in this repository.
 
 ---
 
 ## Project Status
 
-This project is a work in progress and will continue to evolve throughout the term. The current implementation focuses on establishing a strong structural foundation that can be extended safely as additional features are introduced.
+The application is structurally stable and designed for extension. Future work may include:
+
+- Edit functionality for payments and residents
+- Additional dashboard metrics
+- Expanded filtering capabilities
+- Mobile adaptation (React Native or similar structure reuse)
+
+The current focus is structural soundness and predictable behavior rather than feature volume.
