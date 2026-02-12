@@ -1,6 +1,9 @@
 /* src/index.css */
 
-/* Layout + sizing baseline */
+/* -----------------------------
+   Baseline resets / layout
+------------------------------ */
+
 *,
 *::before,
 *::after {
@@ -12,21 +15,6 @@ body {
   height: 100%;
   width: 100%;
   margin: 0;
-}
-
-body {
-  /* Neutral defaults */
-  font-family:
-    system-ui,
-    -apple-system,
-    Segoe UI,
-    Roboto,
-    Helvetica,
-    Arial,
-    "Apple Color Emoji",
-    "Segoe UI Emoji";
-  color: #111;
-  background: #fff;
 }
 
 #root {
@@ -47,8 +35,98 @@ table {
   width: 100%;
 }
 
-/* Optional: slightly nicer focus for accessibility */
+/* -----------------------------
+   Theme tokens
+   Theme is controlled by:
+   document.documentElement.dataset.theme = "light" | "dark"
+------------------------------ */
+
+:root {
+  /* Surfaces */
+  --bg: #ffffff;
+  --bgAccent: #f1f7ff;
+
+  --panel: #ffffff;
+  --border: #e5e5e5;
+
+  /* Text */
+  --text: #111111;
+  --muted: rgba(17, 17, 17, 0.72);
+
+  /* Brand */
+  --accent: #1f6feb;
+  --accentBg: #f0f7ff;
+
+  /* Header */
+  --headerBg: rgba(255, 255, 255, 0.85);
+
+  /* Elevation + UI */
+  --shadow: rgba(0, 0, 0, 0.06);
+  --track: rgba(0, 0, 0, 0.06);
+
+  /* Tables */
+  --tableHead: #fafafa;
+  --rowBorder: #f0f0f0;
+
+  /* Danger / errors */
+  --dangerBg: #fff7f7;
+  --dangerBorder: #f1c0c0;
+  --dangerText: #7a0b0b;
+}
+
+html[data-theme="dark"] {
+  /* Surfaces */
+  --bg: #0b0f19;
+  --bgAccent: #0f1b33;
+
+  --panel: #121a2b;
+  --border: rgba(245, 247, 255, 0.14);
+
+  /* Text */
+  --text: #f5f7ff;
+  --muted: rgba(245, 247, 255, 0.75);
+
+  /* Brand */
+  --accent: #6ea8ff;
+  --accentBg: rgba(110, 168, 255, 0.15);
+
+  /* Header */
+  --headerBg: rgba(11, 15, 25, 0.75);
+
+  /* Elevation + UI */
+  --shadow: rgba(0, 0, 0, 0.55);
+  --track: rgba(245, 247, 255, 0.12);
+
+  /* Tables */
+  --tableHead: rgba(245, 247, 255, 0.06);
+  --rowBorder: rgba(245, 247, 255, 0.1);
+
+  /* Danger / errors */
+  --dangerBg: rgba(220, 38, 38, 0.12);
+  --dangerBorder: rgba(220, 38, 38, 0.35);
+  --dangerText: #ffb4b4;
+}
+
+/* -----------------------------
+   Base document styles
+------------------------------ */
+
+body {
+  font-family:
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Helvetica,
+    Arial,
+    "Apple Color Emoji",
+    "Segoe UI Emoji";
+  color: var(--text);
+  background: var(--bg);
+}
+
+/* Optional: nicer focus for accessibility */
 :focus-visible {
-  outline: 2px solid #1f6feb;
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }

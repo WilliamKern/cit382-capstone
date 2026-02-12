@@ -16,7 +16,7 @@ export async function apiFetch(path, options = {}) {
   // If we're sending a body and user didn't specify Content-Type, assume JSON.
   const hasBody = opts.body !== undefined && opts.body !== null;
   const hasContentType = Object.keys(opts.headers).some(
-    (h) => h.toLowerCase() === "content-type"
+    (h) => h.toLowerCase() === "content-type",
   );
 
   if (hasBody && !hasContentType) {

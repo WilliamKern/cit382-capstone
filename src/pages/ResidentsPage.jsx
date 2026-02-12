@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { deleteResident, getResidents } from "../api/residents";
+import { deleteResident, getResidents } from "../services/residents";
 import Toast from "../components/Toast";
 
 /* ---------- helpers ---------- */
@@ -97,7 +97,7 @@ export default function ResidentsPage() {
 
     const previous = residents;
     setResidents((cur) =>
-      cur.filter((r) => String(r.resident_id) !== String(id))
+      cur.filter((r) => String(r.resident_id) !== String(id)),
     );
 
     try {
@@ -112,9 +112,40 @@ export default function ResidentsPage() {
     }
   };
 
+  const inputStyle = {
+    padding: 10,
+    minWidth: 320,
+    background: "var(--panel)",
+    color: "var(--text)",
+    border: "1px solid var(--border)",
+    borderRadius: 10,
+    outline: "none",
+  };
+
+  const selectStyle = {
+    padding: 10,
+    background: "var(--panel)",
+    color: "var(--text)",
+    border: "1px solid var(--border)",
+    borderRadius: 10,
+    outline: "none",
+  };
+
+  const buttonStyle = {
+    padding: "10px 12px",
+    background: "var(--panel)",
+    color: "var(--text)",
+    border: "1px solid var(--border)",
+    borderRadius: 10,
+    cursor: "pointer",
+    fontWeight: 750,
+  };
+
   /* ----- render ----- */
   return (
-    <div style={{ padding: 18, display: "grid", gap: 12 }}>
+    <div
+      style={{ padding: 18, display: "grid", gap: 12, color: "var(--text)" }}
+    >
       <h2 style={{ margin: 0 }}>Residents</h2>
 
       {/* Controls */}
@@ -130,35 +161,31 @@ export default function ResidentsPage() {
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search by name, email, phone, or ID..."
-          style={{ padding: 10, minWidth: 320 }}
+          style={inputStyle}
         />
 
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value)}
-          style={{ padding: 10 }}
+          style={selectStyle}
         >
           <option value="name">Sort: Name</option>
           <option value="id">Sort: ID</option>
         </select>
 
-        <button
-          onClick={load}
-          disabled={loading}
-          style={{ padding: "10px 12px" }}
-        >
+        <button onClick={load} disabled={loading} style={buttonStyle}>
           {loading ? "Loading..." : "Refresh"}
         </button>
 
         <button
           onClick={() => setQuery("")}
           disabled={!query}
-          style={{ padding: "10px 12px" }}
+          style={buttonStyle}
         >
           Clear
         </button>
 
-        <div style={{ marginLeft: "auto", opacity: 0.8 }}>
+        <div style={{ marginLeft: "auto", color: "var(--muted)" }}>
           Showing <strong>{filteredSortedResidents.length}</strong> of{" "}
           <strong>{residents.length}</strong>
         </div>
@@ -169,9 +196,10 @@ export default function ResidentsPage() {
         <div
           style={{
             padding: 12,
-            border: "1px solid #f1c0c0",
+            border: "1px solid var(--dangerBorder)",
             borderRadius: 10,
-            background: "#fff7f7",
+            background: "var(--dangerBg)",
+            color: "var(--dangerText)",
           }}
         >
           {errorMsg}
@@ -184,18 +212,23 @@ export default function ResidentsPage() {
           style={{
             width: "100%",
             borderCollapse: "collapse",
-            border: "1px solid #e5e5e5",
+            border: "1px solid var(--border)",
+            background: "var(--panel)",
+            color: "var(--text)",
+            borderRadius: 12,
+            overflow: "hidden",
           }}
         >
           <thead>
-            <tr style={{ background: "#fafafa" }}>
+            <tr style={{ background: "var(--tableHead)" }}>
               {["ID", "Name", "Email", "Phone", ""].map((h) => (
                 <th
                   key={h}
                   style={{
                     textAlign: "left",
                     padding: 10,
-                    borderBottom: "1px solid #e5e5e5",
+                    borderBottom: "1px solid var(--border)",
+                    color: "var(--muted)",
                   }}
                 >
                   {h}
@@ -208,43 +241,74 @@ export default function ResidentsPage() {
             {filteredSortedResidents.map((r) => {
               const id = r.resident_id;
               const selected = String(selectedId) === String(id);
-              const fullName = `${r.first_name ?? ""} ${
-                r.last_name ?? ""
-              }`.trim();
+              const fullName =
+                `${r.first_name ?? ""} ${r.last_name ?? ""}`.trim();
 
               return (
                 <tr
                   key={id}
                   onClick={() => setSelectedId(id)}
                   style={{
-                    background: selected ? "#f0f7ff" : "transparent",
+                    background: selected ? "var(--accentBg)" : "transparent",
                     cursor: "pointer",
                   }}
                 >
-                  <td style={{ padding: 10, borderBottom: "1px solid #eee" }}>
+                  <td
+                    style={{
+                      padding: 10,
+                      borderBottom: "1px solid var(--rowBorder)",
+                    }}
+                  >
                     {id}
                   </td>
-                  <td style={{ padding: 10, borderBottom: "1px solid #eee" }}>
+                  <td
+                    style={{
+                      padding: 10,
+                      borderBottom: "1px solid var(--rowBorder)",
+                    }}
+                  >
                     {fullName}
                   </td>
-                  <td style={{ padding: 10, borderBottom: "1px solid #eee" }}>
+                  <td
+                    style={{
+                      padding: 10,
+                      borderBottom: "1px solid var(--rowBorder)",
+                    }}
+                  >
                     {r.email ?? ""}
                   </td>
-                  <td style={{ padding: 10, borderBottom: "1px solid #eee" }}>
+                  <td
+                    style={{
+                      padding: 10,
+                      borderBottom: "1px solid var(--rowBorder)",
+                    }}
+                  >
                     {r.phone ?? ""}
                   </td>
                   <td
                     style={{
                       padding: 10,
-                      borderBottom: "1px solid #eee",
+                      borderBottom: "1px solid var(--rowBorder)",
                       whiteSpace: "nowrap",
                     }}
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <button onClick={() => showToast("Edit coming next step")}>
+                    <button
+                      onClick={() => showToast("Edit coming next step")}
+                      style={{
+                        ...buttonStyle,
+                        padding: "6px 10px",
+                        marginRight: 8,
+                      }}
+                    >
                       Edit
-                    </button>{" "}
-                    <button onClick={() => handleDelete(id)}>Delete</button>
+                    </button>
+                    <button
+                      onClick={() => handleDelete(id)}
+                      style={{ ...buttonStyle, padding: "6px 10px" }}
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               );
@@ -252,7 +316,7 @@ export default function ResidentsPage() {
 
             {!loading && filteredSortedResidents.length === 0 && (
               <tr>
-                <td colSpan={5} style={{ padding: 12, opacity: 0.7 }}>
+                <td colSpan={5} style={{ padding: 12, color: "var(--muted)" }}>
                   No matches.
                 </td>
               </tr>

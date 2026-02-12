@@ -1,34 +1,33 @@
 import { useEffect, useMemo, useState } from "react";
-import { getResidents } from "../api/residents";
-import { getUnits } from "../api/units";
-import { getPayments } from "../api/payments";
+import { getResidents } from "../services/residents";
+import { getUnits } from "../services/units";
 
 function Card({ title, value, subtext }) {
   return (
     <div
       style={{
-        border: "1px solid #e9e9e9",
+        border: "1px solid var(--border)",
         borderRadius: 16,
-        background: "#fff",
+        background: "var(--panel)",
         padding: 16,
-        boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
+        boxShadow: "0 10px 30px var(--shadow)",
         display: "grid",
         gap: 6,
         minHeight: 84,
+        color: "var(--text)",
       }}
     >
-      <div style={{ fontSize: 13, opacity: 0.7 }}>{title}</div>
+      <div style={{ fontSize: 13, color: "var(--muted)" }}>{title}</div>
       <div style={{ fontSize: 22, fontWeight: 900, letterSpacing: -0.3 }}>
         {value}
       </div>
-      <div style={{ fontSize: 13, opacity: 0.75 }}>{subtext}</div>
+      <div style={{ fontSize: 13, color: "var(--muted)" }}>{subtext}</div>
     </div>
   );
 }
 
 function formatDateTime(value) {
   if (!value) return "—";
-
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return "—";
 
@@ -39,21 +38,25 @@ function formatDateTime(value) {
     hour: "numeric",
     minute: "2-digit",
     hour12: true,
-  }).format(d);
+  })
+    .format(d)
+    .replace(" AM", "am")
+    .replace(" PM", "pm");
 }
 
 function Panel({ title, children, right }) {
   return (
     <div
       style={{
-        border: "1px solid #e9e9e9",
+        border: "1px solid var(--border)",
         borderRadius: 16,
-        background: "#fff",
+        background: "var(--panel)",
         padding: 16,
-        boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
+        boxShadow: "0 10px 30px var(--shadow)",
         display: "grid",
         gap: 10,
         width: "100%",
+        color: "var(--text)",
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -77,11 +80,14 @@ function parseDate(d) {
   return Number.isNaN(dt.getTime()) ? null : dt;
 }
 
-export default function DashboardPage() {
+export default function DashboardPage({
+  payments,
+  paymentsLoading,
+  paymentsErrMsg,
+  refreshPayments,
+}) {
   const [residents, setResidents] = useState([]);
   const [units, setUnits] = useState([]);
-  const [payments, setPayments] = useState([]);
-
   const [loading, setLoading] = useState(true);
   const [errMsg, setErrMsg] = useState("");
 
@@ -89,14 +95,9 @@ export default function DashboardPage() {
     setLoading(true);
     setErrMsg("");
     try {
-      const [r, u, p] = await Promise.all([
-        getResidents(),
-        getUnits(),
-        getPayments(),
-      ]);
+      const [r, u] = await Promise.all([getResidents(), getUnits()]);
       setResidents(Array.isArray(r) ? r : []);
       setUnits(Array.isArray(u) ? u : []);
-      setPayments(Array.isArray(p) ? p : []);
     } catch (err) {
       setErrMsg(err?.message || "Failed to load dashboard data.");
     } finally {
@@ -120,7 +121,7 @@ export default function DashboardPage() {
   }, [units]);
 
   const paymentsSorted = useMemo(() => {
-    const copy = [...payments];
+    const copy = [...(payments || [])];
     copy.sort((a, b) => {
       const da = parseDate(a?.paid_date);
       const db = parseDate(b?.paid_date);
@@ -137,7 +138,8 @@ export default function DashboardPage() {
   );
 
   const totals = useMemo(() => {
-    const totalPaymentsAllTime = payments.reduce((sum, p) => {
+    const list = payments || [];
+    const totalPaymentsAllTime = list.reduce((sum, p) => {
       const amt = Number(p?.amount);
       return Number.isFinite(amt) ? sum + amt : sum;
     }, 0);
@@ -145,14 +147,14 @@ export default function DashboardPage() {
     const now = new Date();
     const last30 = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    const totalPaymentsLast30 = payments.reduce((sum, p) => {
+    const totalPaymentsLast30 = list.reduce((sum, p) => {
       const dt = parseDate(p?.paid_date);
       if (!dt || dt < last30) return sum;
       const amt = Number(p?.amount);
       return Number.isFinite(amt) ? sum + amt : sum;
     }, 0);
 
-    const paymentsLast30Count = payments.reduce((count, p) => {
+    const paymentsLast30Count = list.reduce((count, p) => {
       const dt = parseDate(p?.paid_date);
       return dt && dt >= last30 ? count + 1 : count;
     }, 0);
@@ -164,15 +166,16 @@ export default function DashboardPage() {
   const topStatusCount = unitStatusCounts[0]?.count ?? 0;
 
   return (
-    <div style={{ display: "grid", gap: 14, width: "100%" }}>
-      {/* Header strip */}
+    <div
+      style={{ display: "grid", gap: 14, width: "100%", color: "var(--text)" }}
+    >
       <div
         style={{
-          border: "1px solid #e9e9e9",
+          border: "1px solid var(--border)",
           borderRadius: 18,
-          background: "#fff",
+          background: "var(--panel)",
           padding: 16,
-          boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
+          boxShadow: "0 10px 30px var(--shadow)",
           display: "flex",
           alignItems: "center",
           gap: 12,
@@ -184,7 +187,7 @@ export default function DashboardPage() {
           <div style={{ fontSize: 22, fontWeight: 900, letterSpacing: -0.3 }}>
             Dashboard
           </div>
-          <div style={{ opacity: 0.75 }}>
+          <div style={{ color: "var(--muted)" }}>
             Snapshot of residents, units, and payments.
           </div>
         </div>
@@ -198,21 +201,19 @@ export default function DashboardPage() {
             flexWrap: "wrap",
           }}
         >
-          {loading ? (
-            <div style={{ opacity: 0.7 }}>Loading…</div>
-          ) : (
-            <div style={{ opacity: 0.7 }}>Updated just now</div>
-          )}
-
           <button
-            onClick={load}
+            onClick={() => {
+              load();
+              refreshPayments();
+            }}
             style={{
               padding: "10px 12px",
               borderRadius: 10,
-              border: "1px solid #e5e5e5",
-              background: "#fff",
+              border: "1px solid var(--border)",
+              background: "var(--panel)",
               cursor: "pointer",
               fontWeight: 700,
+              color: "var(--text)",
             }}
           >
             Refresh
@@ -223,8 +224,12 @@ export default function DashboardPage() {
       {errMsg && (
         <div style={{ color: "crimson", whiteSpace: "pre-wrap" }}>{errMsg}</div>
       )}
+      {paymentsErrMsg && (
+        <div style={{ color: "crimson", whiteSpace: "pre-wrap" }}>
+          {paymentsErrMsg}
+        </div>
+      )}
 
-      {/* KPI grid: responsive auto-fit */}
       <div
         style={{
           display: "grid",
@@ -250,12 +255,17 @@ export default function DashboardPage() {
         />
         <Card
           title="Payments (Last 30 days)"
-          value={loading ? "—" : formatMoney(totals.totalPaymentsLast30)}
-          subtext={loading ? "—" : `${totals.paymentsLast30Count} payment(s)`}
+          value={
+            paymentsLoading ? "—" : formatMoney(totals.totalPaymentsLast30)
+          }
+          subtext={
+            paymentsLoading
+              ? "Loading..."
+              : `${totals.paymentsLast30Count} payment(s)`
+          }
         />
       </div>
 
-      {/* Panels grid: responsive, consistent */}
       <div
         style={{
           display: "grid",
@@ -265,18 +275,11 @@ export default function DashboardPage() {
           width: "100%",
         }}
       >
-        <Panel
-          title="Unit Status Breakdown"
-          right={
-            <div style={{ opacity: 0.7, fontSize: 13 }}>
-              {loading ? "—" : `${unitStatusCounts.length} status type(s)`}
-            </div>
-          }
-        >
+        <Panel title="Unit Status Breakdown">
           {loading ? (
-            <div style={{ opacity: 0.7 }}>Loading unit statuses…</div>
+            <div style={{ color: "var(--muted)" }}>Loading unit statuses…</div>
           ) : unitStatusCounts.length === 0 ? (
-            <div style={{ opacity: 0.7 }}>No unit data available.</div>
+            <div style={{ color: "var(--muted)" }}>No unit data available.</div>
           ) : (
             <div style={{ display: "grid", gap: 8 }}>
               {unitStatusCounts.map((s) => {
@@ -294,12 +297,11 @@ export default function DashboardPage() {
                     }}
                   >
                     <div style={{ fontWeight: 800 }}>{s.status}</div>
-
                     <div
                       style={{
                         height: 10,
                         borderRadius: 999,
-                        background: "#f1f1f1",
+                        background: "var(--track)",
                         overflow: "hidden",
                       }}
                     >
@@ -307,12 +309,11 @@ export default function DashboardPage() {
                         style={{
                           width: `${pct}%`,
                           height: "100%",
-                          background: "#1f6feb",
+                          background: "var(--accent)",
                         }}
                       />
                     </div>
-
-                    <div style={{ textAlign: "right", opacity: 0.75 }}>
+                    <div style={{ textAlign: "right", color: "var(--muted)" }}>
                       {s.count}
                     </div>
                   </div>
@@ -325,17 +326,17 @@ export default function DashboardPage() {
         <Panel
           title="Recent Payments"
           right={
-            <div style={{ opacity: 0.7, fontSize: 13 }}>
-              {loading
-                ? "—"
+            <div style={{ color: "var(--muted)", fontSize: 13 }}>
+              {paymentsLoading
+                ? "Loading..."
                 : `All-time: ${formatMoney(totals.totalPaymentsAllTime)}`}
             </div>
           }
         >
-          {loading ? (
-            <div style={{ opacity: 0.7 }}>Loading payments…</div>
-          ) : payments.length === 0 ? (
-            <div style={{ opacity: 0.7 }}>No payments found.</div>
+          {paymentsLoading ? (
+            <div style={{ color: "var(--muted)" }}>Loading payments…</div>
+          ) : (payments || []).length === 0 ? (
+            <div style={{ color: "var(--muted)" }}>No payments found.</div>
           ) : (
             <div style={{ width: "100%", overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -348,7 +349,7 @@ export default function DashboardPage() {
                           style={{
                             textAlign: "left",
                             fontSize: 12,
-                            opacity: 0.7,
+                            color: "var(--muted)",
                             paddingBottom: 8,
                             whiteSpace: "nowrap",
                           }}
@@ -364,8 +365,7 @@ export default function DashboardPage() {
                     <tr
                       key={
                         p?.payment_id ??
-                        `${p?.lease_id}-${formatDateTime(p?.paid_date)}
--${p?.amount}`
+                        `${p?.lease_id}-${p?.paid_date}-${p?.amount}`
                       }
                     >
                       <td style={{ padding: "6px 0", whiteSpace: "nowrap" }}>
@@ -387,35 +387,9 @@ export default function DashboardPage() {
                   ))}
                 </tbody>
               </table>
-
-              <div style={{ marginTop: 8, opacity: 0.7, fontSize: 13 }}>
-                Showing the 8 most recent payments (by paid_date).
-              </div>
             </div>
           )}
         </Panel>
-      </div>
-
-      <div
-        style={{
-          border: "1px solid #e9e9e9",
-          borderRadius: 16,
-          background: "#fff",
-          padding: 16,
-          boxShadow: "0 10px 30px rgba(0,0,0,0.06)",
-          display: "grid",
-          gap: 8,
-          width: "100%",
-        }}
-      >
-        <div style={{ fontSize: 16, fontWeight: 900 }}>Notes</div>
-        <ul style={{ margin: 0, paddingLeft: 18, opacity: 0.8 }}>
-          <li>Residents: search and manage records.</li>
-          <li>Units: read-only list with search + sort.</li>
-          <li>
-            Payments: view ledger and add new payments (no edit/delete in UI).
-          </li>
-        </ul>
       </div>
     </div>
   );

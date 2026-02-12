@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { getUnits } from "../api/units";
+import { getUnits } from "../services/units";
 
 const COLS = [
-  { key: "unit_number", label: "Unit", type: "string" },
+  { key: "unit_number", label: "Unit #", type: "string" },
   { key: "floorplan", label: "Floorplan", type: "string" },
   { key: "bedrooms", label: "Beds", type: "number" },
   { key: "bathrooms", label: "Baths", type: "number" },
@@ -127,19 +127,47 @@ export default function UnitsPage() {
   const headerStyle = (active) => ({
     textAlign: "left",
     padding: 10,
-    borderBottom: "1px solid #e5e5e5",
+    borderBottom: "1px solid var(--border)",
     whiteSpace: "nowrap",
     cursor: "pointer",
     userSelect: "none",
     fontWeight: active ? 800 : 700,
-    opacity: active ? 1 : 0.9,
+    opacity: active ? 1 : 0.95,
+    color: active ? "var(--text)" : "var(--muted)",
   });
 
+  const inputStyle = {
+    padding: 10,
+    width: 480,
+    maxWidth: "100%",
+    background: "var(--panel)",
+    color: "var(--text)",
+    border: "1px solid var(--border)",
+    borderRadius: 10,
+    outline: "none",
+  };
+
+  const buttonStyle = {
+    padding: "10px 12px",
+    cursor: "pointer",
+    background: "var(--panel)",
+    color: "var(--text)",
+    border: "1px solid var(--border)",
+    borderRadius: 10,
+    fontWeight: 750,
+  };
+
+  const cellStyle = {
+    padding: 10,
+    borderBottom: "1px solid var(--rowBorder)",
+    whiteSpace: "nowrap",
+  };
+
   return (
-    <div style={{ display: "grid", gap: 12 }}>
+    <div style={{ display: "grid", gap: 12, color: "var(--text)" }}>
       <div style={{ display: "grid", gap: 6 }}>
         <h2 style={{ margin: 0 }}>Units</h2>
-        <div style={{ opacity: 0.75 }}>
+        <div style={{ color: "var(--muted)" }}>
           Read-only list + search + sortable columns (click a header to sort).
         </div>
       </div>
@@ -153,31 +181,26 @@ export default function UnitsPage() {
         }}
       >
         <input
-          placeholder="Search units..."
+          placeholder="Search units by Unit #, Floorplan, Sq Ft, Status, or Market Rent..."
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          style={{ padding: 10, minWidth: 320 }}
+          style={inputStyle}
         />
-        <button
-          onClick={load}
-          style={{ padding: "10px 12px", cursor: "pointer" }}
-        >
+
+        <button onClick={load} style={buttonStyle}>
           Refresh
         </button>
-        <button
-          onClick={() => setQ("")}
-          style={{ padding: "10px 12px", cursor: "pointer" }}
-        >
+        <button onClick={() => setQ("")} style={buttonStyle}>
           Clear
         </button>
 
-        <div style={{ marginLeft: "auto", opacity: 0.8 }}>
+        <div style={{ marginLeft: "auto", color: "var(--muted)" }}>
           Showing <strong>{filteredSorted.length}</strong> of{" "}
           <strong>{units.length}</strong>
         </div>
       </div>
 
-      {loading && <div>Loading units...</div>}
+      {loading && <div style={{ color: "var(--muted)" }}>Loading units...</div>}
       {errMsg && (
         <div style={{ color: "crimson", whiteSpace: "pre-wrap" }}>{errMsg}</div>
       )}
@@ -188,12 +211,15 @@ export default function UnitsPage() {
             style={{
               width: "100%",
               borderCollapse: "collapse",
-              border: "1px solid #e5e5e5",
-              background: "#fff",
+              border: "1px solid var(--border)",
+              background: "var(--panel)",
+              color: "var(--text)",
+              borderRadius: 12,
+              overflow: "hidden",
             }}
           >
             <thead>
-              <tr style={{ background: "#fafafa" }}>
+              <tr style={{ background: "var(--tableHead)" }}>
                 {COLS.map((c) => {
                   const active = c.key === sortKey;
                   return (
@@ -216,7 +242,7 @@ export default function UnitsPage() {
                 <tr>
                   <td
                     colSpan={COLS.length}
-                    style={{ padding: 12, opacity: 0.7 }}
+                    style={{ padding: 12, color: "var(--muted)" }}
                   >
                     No units match your search.
                   </td>
@@ -224,41 +250,13 @@ export default function UnitsPage() {
               ) : (
                 filteredSorted.map((u, i) => (
                   <tr key={u?.unit_id ?? u?.unit_number ?? i}>
-                    <td
-                      style={{ padding: 10, borderBottom: "1px solid #f0f0f0" }}
-                    >
-                      {u?.unit_number ?? "—"}
-                    </td>
-                    <td
-                      style={{ padding: 10, borderBottom: "1px solid #f0f0f0" }}
-                    >
-                      {u?.floorplan ?? "—"}
-                    </td>
-                    <td
-                      style={{ padding: 10, borderBottom: "1px solid #f0f0f0" }}
-                    >
-                      {u?.bedrooms ?? "—"}
-                    </td>
-                    <td
-                      style={{ padding: 10, borderBottom: "1px solid #f0f0f0" }}
-                    >
-                      {u?.bathrooms ?? "—"}
-                    </td>
-                    <td
-                      style={{ padding: 10, borderBottom: "1px solid #f0f0f0" }}
-                    >
-                      {u?.square_feet ?? "—"}
-                    </td>
-                    <td
-                      style={{ padding: 10, borderBottom: "1px solid #f0f0f0" }}
-                    >
-                      {u?.status ?? "—"}
-                    </td>
-                    <td
-                      style={{ padding: 10, borderBottom: "1px solid #f0f0f0" }}
-                    >
-                      {u?.market_rent ?? "—"}
-                    </td>
+                    <td style={cellStyle}>{u?.unit_number ?? "—"}</td>
+                    <td style={cellStyle}>{u?.floorplan ?? "—"}</td>
+                    <td style={cellStyle}>{u?.bedrooms ?? "—"}</td>
+                    <td style={cellStyle}>{u?.bathrooms ?? "—"}</td>
+                    <td style={cellStyle}>{u?.square_feet ?? "—"}</td>
+                    <td style={cellStyle}>{u?.status ?? "—"}</td>
+                    <td style={cellStyle}>{u?.market_rent ?? "—"}</td>
                   </tr>
                 ))
               )}

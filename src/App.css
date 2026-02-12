@@ -40,3 +40,10 @@
 .read-the-docs {
   color: #888;
 }
+
+.unit-search {
+  width: 320px;
+  max-width: 100%;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+}
